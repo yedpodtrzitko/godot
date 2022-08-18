@@ -1,5 +1,6 @@
 import os
 import platform
+import subprocess
 
 if os.name == "nt":
     import winreg
@@ -62,8 +63,6 @@ def find_mono_root_dir(bits):
 
 
 def find_msbuild_tools_path_reg():
-    import subprocess
-
     vswhere = os.getenv("PROGRAMFILES(X86)")
     if not vswhere:
         vswhere = os.getenv("PROGRAMFILES")

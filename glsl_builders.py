@@ -3,6 +3,8 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+import os.path
+
 from platform_methods import subprocess_main
 
 
@@ -56,11 +58,6 @@ def include_file_in_rd_header(filename, header_data, depth):
 
         while line.find("#include ") != -1:
             includeline = line.replace("#include ", "").strip()[1:-1]
-
-            import os.path
-
-            included_file = ""
-
             if includeline.startswith("thirdparty/"):
                 included_file = os.path.relpath(includeline)
 
@@ -179,9 +176,6 @@ def include_file_in_raw_header(filename, header_data, depth):
 
         while line.find("#include ") != -1:
             includeline = line.replace("#include ", "").strip()[1:-1]
-
-            import os.path
-
             included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
             include_file_in_raw_header(included_file, header_data, depth + 1)
 

@@ -3,6 +3,8 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+import os.path
+
 from platform_methods import subprocess_main
 
 
@@ -90,8 +92,6 @@ def include_file_in_gles3_header(filename, header_data, depth):
 
         while line.find("#include ") != -1:
             includeline = line.replace("#include ", "").strip()[1:-1]
-
-            import os.path
 
             included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
             if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
@@ -182,7 +182,7 @@ def include_file_in_gles3_header(filename, header_data, depth):
     return header_data
 
 
-def build_gles3_header(filename, include, class_suffix, output_attribs):
+def build_gles3_header(filename, include, class_suffix):
     header_data = GLES3HeaderStruct()
     include_file_in_gles3_header(filename, header_data, 0)
 
@@ -190,8 +190,6 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
     fd = open(out_file, "w")
     defspec = 0
     defvariant = ""
-
-    enum_constants = []
 
     fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
 
@@ -552,7 +550,7 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
 
 def build_gles3_headers(target, source, env):
     for x in source:
-        build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
+        build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3")
 
 
 if __name__ == "__main__":

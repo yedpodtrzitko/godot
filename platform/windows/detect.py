@@ -371,8 +371,6 @@ def configure_mingw(env):
         else:  # default to 64-bit on Linux
             env["bits"] = "64"
 
-    mingw_prefix = ""
-
     if env["bits"] == "32":
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])

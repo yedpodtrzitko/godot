@@ -1,6 +1,9 @@
 import os
 import os.path
 import subprocess
+from distutils.dir_util import copy_tree
+from glob import glob
+from shutil import copy, rmtree
 
 from SCons.Script import Dir, Environment
 
@@ -48,8 +51,6 @@ def find_file_in_dir(directory, names, prefixes=[""], extensions=[""]):
 
 
 def copy_file(src_dir, dst_dir, src_name, dst_name=""):
-    from shutil import copy
-
     src_path = os.path.join(Dir(src_dir).abspath, src_name)
     dst_dir = Dir(dst_dir).abspath
 
@@ -397,12 +398,8 @@ def configure(env, env_mono):
 
 
 def make_template_dir(env, mono_root):
-    from shutil import rmtree
-
     platform = env["platform"]
     target = env["target"]
-
-    template_dir_name = ""
 
     assert is_desktop(platform)
 
@@ -427,10 +424,6 @@ def make_template_dir(env, mono_root):
 
 
 def copy_mono_root_files(env, mono_root, mono_bcl):
-    from glob import glob
-    from shutil import copy
-    from shutil import rmtree
-
     if not mono_root:
         raise RuntimeError("Mono installation directory not found")
 
@@ -469,10 +462,6 @@ def copy_mono_root_files(env, mono_root, mono_bcl):
 
 
 def copy_mono_etc_dir(mono_root, target_mono_config_dir, platform):
-    from distutils.dir_util import copy_tree
-    from glob import glob
-    from shutil import copy
-
     if not os.path.isdir(target_mono_config_dir):
         os.makedirs(target_mono_config_dir)
 
@@ -503,8 +492,6 @@ def copy_mono_etc_dir(mono_root, target_mono_config_dir, platform):
 
 
 def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
-    from shutil import copy
-
     def copy_if_exists(src, dst):
         if os.path.isfile(src):
             copy(src, dst)

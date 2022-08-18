@@ -2,6 +2,8 @@
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 """
+from collections import OrderedDict
+import zlib
 
 from platform_methods import subprocess_main
 
@@ -33,7 +35,6 @@ def make_certs_header(target, source, env):
     g = open(dst, "w", encoding="utf-8")
     buf = f.read()
     decomp_size = len(buf)
-    import zlib
 
     # Use maximum zlib compression level to further reduce file size
     # (at the cost of initial build times).
@@ -205,8 +206,6 @@ def make_license_header(target, source, env):
             while self.next_line() and self.current.startswith(" "):
                 lines.append(self.current.strip())
             return (tag, lines)
-
-    from collections import OrderedDict
 
     projects = OrderedDict()
     license_list = []

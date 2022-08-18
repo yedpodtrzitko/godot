@@ -1,12 +1,13 @@
-def generate_compressed_config(config_src, output_dir):
-    import os.path
+import os.path
+import zlib
 
+
+def generate_compressed_config(config_src: str, output_dir: str):
     # Source file
     with open(os.path.join(output_dir, "android_mono_config.gen.cpp"), "w") as cpp:
         with open(config_src, "rb") as f:
             buf = f.read()
             decompr_size = len(buf)
-            import zlib
 
             # Use maximum zlib compression level to further reduce file size
             # (at the cost of initial build times).

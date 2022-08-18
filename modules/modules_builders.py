@@ -2,6 +2,7 @@
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 """
+import os
 
 from platform_methods import subprocess_main
 
@@ -13,7 +14,6 @@ def generate_modules_enabled(target, source, env):
 
 
 def generate_modules_tests(target, source, env):
-    import os
 
     with open(target[0].path, "w") as f:
         for header in source:

@@ -1,7 +1,7 @@
 import os
 import re
-import sys
 import glob
+from json import dump
 import subprocess
 from collections import OrderedDict
 from collections.abc import Mapping
@@ -376,7 +376,6 @@ def module_check_dependencies(self, module):
 
 
 def sort_module_list(env):
-    out = OrderedDict()
     deps = {k: v[0] + list(filter(lambda x: x in env.module_list, v[1])) for k, v in env.module_dependencies.items()}
 
     frontier = list(env.module_list.keys())
@@ -533,7 +532,7 @@ def no_verbose(sys, env):
     env.Append(JAVACCOMSTR=[java_compile_source_message])
 
 
-def detect_visual_c_compiler_version(tools_env):
+def detect_visual_c_compiler_version(tools_env: dict) -> str:
     # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
     # (see the SCons documentation for more information on what it does)...
     # in order for this function to be well encapsulated i choose to force it to receive SCons's TOOLS env (env['ENV']
@@ -627,7 +626,6 @@ def detect_visual_c_compiler_version(tools_env):
         if vc_x86_amd64_compiler_detection_index > -1 and (
             vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index
         ):
-            vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
     return vc_chosen_compiler_str
@@ -887,7 +885,6 @@ def Run(env, function, short_message, subprocess=True):
 
 
 def detect_darwin_sdk_path(platform, env):
-    sdk_name = ""
     if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
@@ -1092,7 +1089,6 @@ def show_progress(env):
 
 def dump(env):
     # Dumps latest build information for debugging purposes and external tools.
-    from json import dump
 
     def non_serializable(obj):
         return "<<non-serializable: %s>>" % (type(obj).__qualname__)

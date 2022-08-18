@@ -1,6 +1,7 @@
 # Build the Godot API solution
 
 import os
+from shutil import copy
 
 from SCons.Script import Dir
 
@@ -32,8 +33,6 @@ def build_api_solution(source, target, env):
         os.makedirs(dst_dir)
 
     def copy_target(target_path):
-        from shutil import copy
-
         filename = os.path.basename(target_path)
 
         src_path = os.path.join(core_src_dir, filename)

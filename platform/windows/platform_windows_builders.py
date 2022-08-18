@@ -8,7 +8,6 @@ from platform_methods import subprocess_main
 
 
 def make_debug_mingw(target, source, env):
-    mingw_prefix = ""
     if env["bits"] == "32":
         mingw_prefix = env["mingw_prefix_32"]
     else:

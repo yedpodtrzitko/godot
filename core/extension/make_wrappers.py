@@ -12,7 +12,6 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_version(argcount, const=False, returns=False):
     s = proto
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
