@@ -1,0 +1,12 @@
+name: "Testing Job"
+on:
+  workflow_call:
+
+jobs:
+  static-checks:
+    name: exit condition test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Exit
+        run: |
+          exit 0

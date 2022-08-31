@@ -1,5 +1,10 @@
 name: 🏁 Windows Builds
-on: [push, pull_request]
+on:
+  workflow_call:
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
+  cancel-in-progress: true
 
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
@@ -8,10 +13,6 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=all werror=yes module_text_server_fb_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-windows
-  cancel-in-progress: true
 
 jobs:
   build-windows:
