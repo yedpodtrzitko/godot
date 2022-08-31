@@ -16,6 +16,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent Azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          exit 1 # error out
           sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -67,3 +68,4 @@ jobs:
       - name: Style checks via dotnet format (dotnet_format.sh)
         run: |
           bash ./misc/scripts/dotnet_format.sh
+
