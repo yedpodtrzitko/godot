@@ -43,7 +43,6 @@
 
 #include <dlfcn.h>
 #include <emscripten.h>
-#include <stdlib.h>
 
 #include "api/javascript_singleton.h"
 #include "godot_js.h"
