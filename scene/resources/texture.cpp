@@ -2617,6 +2617,8 @@ void AnimatedTexture::_update_proxy() {
 
 	time += delta;
 
+	float unused = 1;
+
 	float limit;
 
 	if (fps == 0) {
