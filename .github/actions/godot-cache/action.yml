@@ -10,6 +10,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Print cache name
+      shell: bash
+      run: |
+        echo "cache-name ${{inputs.cache-name}}"
     # Upload cache on completion and check it out now
     - name: Load .scons_cache directory
       uses: actions/cache@v3
