@@ -1,0 +1,8 @@
+---
+- description: barebone queries
+
+- queries: '.'
+  from: codeql/cpp-queries
+
+- include:
+    id: cpp/infinite-loop-with-unsatisfiable-exit-condition
