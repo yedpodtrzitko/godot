@@ -19,7 +19,6 @@ from importlib.util import spec_from_file_location, module_from_spec
 # an `editor.py` file at the root of the module creates a clash with the editor
 # folder when doing `import editor.template_builder`)
 
-
 def _helper_module(name, path):
     spec = spec_from_file_location(name, path)
     module = module_from_spec(spec)
@@ -124,7 +123,6 @@ if "TERM" in os.environ:  # Used for colored output.
 env_base.disabled_modules = []
 env_base.module_version_string = ""
 env_base.msvc = False
-
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_module_version_string = methods.add_module_version_string
@@ -147,8 +145,41 @@ env_base["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
 env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
-
 # Build options
+# find a better way how to pass this class here
+
+# when running CodeQL CI job, use custom caching class
+print('workflow xxx-%s-xxx' % os.getenv("GITHUB_WORKFLOW", ""))
+if "codeql" in os.getenv("GITHUB_WORKFLOW", "").lower():
+    # if this get imported too early, it will not be used
+    import SCons.CacheDir
+    class CodeQLCacheDir(SCons.CacheDir.CacheDir):
+        def __init__(self, path):
+            super().__init__(path)
+            self.current_cache_debug = True
+
+        @classmethod
+        def copy_to_cache(cls, env, src, dst):
+            """When running codeql dont cache anything but thirdparty modules"""
+            print('custom copy to cache', src)
+            if not src.startswith('thirdparty/'):
+                print('cache item not saved', src, dst)
+                return None
+
+            return super().copy_to_cache(env, src, dst)
+
+        @classmethod
+        def copy_from_cache(cls, env, src, dst):
+            """When running codeql dont retrieve anything but thirdparty modules"""
+            print('custom copy from cache', dst)
+            if not dst.startswith('thirdparty/'):
+                print('cache item not retrieved', src, dst)
+                return None
+
+            return super().copy_from_cache(env, src, dst)
+
+
+    env_base.CacheDir('scons-cache', CodeQLCacheDir)
 
 customs = ["custom.py"]
 
