@@ -154,7 +154,6 @@ public:
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
-
 	void set_block_animation_update_ptr(bool *p_block_ptr);
 
 	void set_play_position(float p_pos);

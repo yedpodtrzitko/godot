@@ -1,0 +1,76 @@
+name: "🔎 CodeQL"
+on:
+  push:
+    branches:
+      - "master"
+      - "3.x"
+
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-codeql
+  cancel-in-progress: true
+
+env:
+  ACTIONS_STEP_DEBUG: true
+  GODOT_BASE_BRANCH: ${{ github.ref_name }}
+  SCONS_CACHE: "${{ github.workspace }}/.scons-cache/"
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          #config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          upload: "failure-only"
+          output: sarif-results
+          category: "/language:${{ matrix.language }}"
+
+      - name: filter-sarif
+        uses: advanced-security/filter-sarif@develop
+        with:
+          patterns: |
+            -thirdparty/**/*
+          input: sarif-results/${{ matrix.language }}.sarif
+          output: sarif-results/${{ matrix.language }}.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: sarif-results/${{ matrix.language }}.sarif
+
+      - name: Upload loc as a Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sarif-results
+          path: sarif-results
+          retention-days: 1
