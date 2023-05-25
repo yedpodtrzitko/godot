@@ -31,10 +31,10 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -132,6 +132,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	Button *key_insert_button = nullptr;
 	Button *key_insert_all_button = nullptr;
 
+	EditorInspectorSection *bones_section = nullptr;
+
 	EditorFileDialog *file_dialog = nullptr;
 
 	bool keyable = false;
@@ -146,7 +148,6 @@ class Skeleton3DEditor : public VBoxContainer {
 	EditorFileDialog *file_export_lib = nullptr;
 
 	void update_joint_tree();
-	void update_editors();
 
 	void create_editors();
 

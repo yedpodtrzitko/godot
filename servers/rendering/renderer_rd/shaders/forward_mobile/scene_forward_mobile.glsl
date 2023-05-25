@@ -347,8 +347,6 @@ void main() {
 #CODE : VERTEX
 	}
 
-	/* output */
-
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
@@ -361,7 +359,7 @@ void main() {
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
-	vertex = mat3(model_matrix) * vertex;
+	vertex = mat3(inv_view_matrix * modelview) * vertex;
 	vec3 temp_precision;
 	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	vertex = mat3(scene_data.view_matrix) * vertex;
@@ -1536,7 +1534,28 @@ void main() {
 #endif
 			blur_shadow(shadow);
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
+#ifdef DEBUG_DRAW_PSSM_SPLITS
+			vec3 tint = vec3(1.0);
+			if (-vertex.z < directional_lights.data[i].shadow_split_offsets.x) {
+				tint = vec3(1.0, 0.0, 0.0);
+			} else if (-vertex.z < directional_lights.data[i].shadow_split_offsets.y) {
+				tint = vec3(0.0, 1.0, 0.0);
+			} else if (-vertex.z < directional_lights.data[i].shadow_split_offsets.z) {
+				tint = vec3(0.0, 0.0, 1.0);
+			} else {
+				tint = vec3(1.0, 1.0, 0.0);
+			}
+			tint = mix(tint, vec3(1.0), shadow);
+			shadow = 1.0;
+#endif
+
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0,
+#ifndef DEBUG_DRAW_PSSM_SPLITS
+					directional_lights.data[i].color * directional_lights.data[i].energy,
+#else
+					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
+#endif
+					true, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif

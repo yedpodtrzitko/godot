@@ -41,12 +41,12 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 #include "core/version.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_vcs_interface.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
@@ -387,6 +387,8 @@ void ProjectDialog::_nonempty_confirmation_ok_pressed() {
 }
 
 void ProjectDialog::_renderer_selected() {
+	ERR_FAIL_COND(!renderer_button_group->get_pressed_button());
+
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
 	if (renderer_type == "forward_plus") {
@@ -1827,7 +1829,7 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 }
 
 void ProjectList::_show_project(const String &p_path) {
-	OS::get_singleton()->shell_open(String("file://") + p_path);
+	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
 }
 
 void ProjectList::_bind_methods() {
@@ -1961,6 +1963,9 @@ Ref<Texture2D> ProjectManager::_file_dialog_get_thumbnail(const String &p_path) 
 }
 
 void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
+	if (p_theme.is_null()) {
+		return;
+	}
 	List<StringName> tl;
 	p_theme->get_icon_list(SNAME("EditorIcons"), &tl);
 	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
@@ -2172,7 +2177,7 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
-	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 400.0 * EDSCALE);
+	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 0);
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(vformat(TTR("You requested to open %d projects in parallel. Do you confirm?\nNote that usual checks for engine version compatibility will be bypassed."), selected_list.size()));
@@ -2257,7 +2262,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 void ProjectManager::_full_convert_button_pressed() {
 	ask_update_settings->hide();
-	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 400.0 * EDSCALE));
+	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 0));
 	ask_full_convert_dialog->get_cancel_button()->grab_focus();
 }
 
@@ -2270,14 +2275,6 @@ void ProjectManager::_perform_full_project_conversion() {
 	const String &path = selected_list[0].path;
 
 	print_line("Converting project: " + path);
-
-	Ref<ConfigFile> cf;
-	cf.instantiate();
-	cf->load(path.path_join("project.godot"));
-	cf->set_value("", "config_version", GODOT4_CONFIG_VERSION);
-	cf->save(path.path_join("project.godot"));
-	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
-
 	List<String> args;
 	args.push_back("--path");
 	args.push_back(path);
@@ -2285,6 +2282,8 @@ void ProjectManager::_perform_full_project_conversion() {
 
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
+
+	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
 }
 
 void ProjectManager::_run_project_confirm() {
@@ -2600,6 +2599,7 @@ ProjectManager::ProjectManager() {
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.

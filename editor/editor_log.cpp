@@ -43,9 +43,6 @@
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
-	if (self->current != Thread::get_caller_id()) {
-		return;
-	}
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
@@ -58,10 +55,12 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str += " (User)";
 	}
 
-	if (p_type == ERR_HANDLER_WARNING) {
-		self->add_message(err_str, MSG_TYPE_WARNING);
+	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
+
+	if (self->current != Thread::get_caller_id()) {
+		callable_mp(self, &EditorLog::add_message).bind(err_str, message_type).call_deferred();
 	} else {
-		self->add_message(err_str, MSG_TYPE_ERROR);
+		self->add_message(err_str, message_type);
 	}
 }
 
@@ -91,8 +90,16 @@ void EditorLog::_update_theme() {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
 
-	log->add_theme_font_size_override("normal_font_size", get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts")));
-	log->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
+	// Disable padding for highlighted background/foreground to prevent highlights from overlapping on close lines.
+	// This also better matches terminal output, which does not use any form of padding.
+	log->add_theme_constant_override("text_highlight_h_padding", 0);
+	log->add_theme_constant_override("text_highlight_v_padding", 0);
+
+	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
+	log->add_theme_font_size_override("normal_font_size", font_size);
+	log->add_theme_font_size_override("bold_font_size", font_size);
+	log->add_theme_font_size_override("italics_font_size", font_size);
+	log->add_theme_font_size_override("mono_font_size", font_size);
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
@@ -270,6 +277,11 @@ void EditorLog::_rebuild_log() {
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
+		return;
+	}
+
+	if (unlikely(log->is_updating())) {
+		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
 		return;
 	}
 
