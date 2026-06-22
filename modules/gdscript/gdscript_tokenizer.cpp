@@ -706,8 +706,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 		has_error = true;
 	}
 	bool previous_was_underscore = false; // Allow `_` to be used in a number, for readability.
-	while (digit_check_func(_peek()) || is_underscore(_peek())) {
-		if (is_underscore(_peek())) {
+	while (true) {
+		char32_t ch = _peek();
+		if (!digit_check_func(ch) && !is_underscore(ch)) {
+			break;
+		}
+
+		if (is_underscore(ch)) {
 			if (previous_was_underscore) {
 				Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 				error.start_column = column;
@@ -757,8 +762,12 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 				has_error = true;
 			}
 			previous_was_underscore = false;
-			while (is_digit(_peek()) || is_underscore(_peek())) {
-				if (is_underscore(_peek())) {
+			while (true) {
+				char32_t ch = _peek();
+				if (!is_digit(ch) && !is_underscore(ch)) {
+					break;
+				}
+				if (is_underscore(ch)) {
 					if (previous_was_underscore) {
 						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 						error.start_column = column;
@@ -789,8 +798,12 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 				push_error(error);
 			}
 			previous_was_underscore = false;
-			while (is_digit(_peek()) || is_underscore(_peek())) {
-				if (is_underscore(_peek())) {
+			while (true) {
+				char32_t ch = _peek();
+				if (!is_digit(ch) && !is_underscore(ch)) {
+					break;
+				}
+				if (is_underscore(ch)) {
 					if (previous_was_underscore) {
 						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 						error.start_column = column;
